@@ -41,21 +41,21 @@ var CHMETA=[
 ];
 var JUZ=[[1,1,1],[2,2,142],[3,2,253],[4,3,93],[5,4,24],[6,4,148],[7,5,82],[8,6,111],[9,7,88],[10,8,41],[11,9,93],[12,11,6],[13,12,53],[14,15,1],[15,17,1],[16,18,75],[17,21,1],[18,23,1],[19,25,21],[20,27,56],[21,29,46],[22,33,31],[23,36,28],[24,39,32],[25,41,47],[26,46,1],[27,51,31],[28,58,1],[29,67,1],[30,78,1]];
 var LANGS=[
- {id:85,n:'English',q:'English',b:1},
- {id:54,n:'Urdu',q:'اردو',rtl:1},
- {id:122,n:'Hindi',q:'हिंदी'},
- {id:161,n:'Bengali',q:'বাংলা'},
- {id:133,n:'Tamil',q:'தமிழ்'},
- {id:227,n:'Telugu',q:'తెలుగు'},
- {id:80,n:'Malayalam',q:'മലയാളം'},
- {id:771,n:'Kannada',q:'ಕನ್ನಡ'},
- {id:225,n:'Gujarati',q:'ગુજરાતી'},
- {id:226,n:'Marathi',q:'मराठी'},
- {id:29,n:'Persian',q:'فارسی',rtl:1},
- {id:33,n:'Indonesian',q:'Indonesia'},
- {id:77,n:'Turkish',q:'Türkçe'},
- {id:31,n:'French',q:'Français'},
- {id:83,n:'Spanish',q:'Español'}
+ {id:85,n:'English',q:'English',b:1,t:'en'},
+ {id:54,n:'Urdu',q:'اردو',rtl:1,t:'ur'},
+ {id:122,n:'Hindi',q:'हिंदी',t:'hi'},
+ {id:161,n:'Bengali',q:'বাংলা',t:'bn'},
+ {id:133,n:'Tamil',q:'தமிழ்',t:'ta'},
+ {id:227,n:'Telugu',q:'తెలుగు',t:'te'},
+ {id:80,n:'Malayalam',q:'മലയാളം',t:'ml'},
+ {id:771,n:'Kannada',q:'ಕನ್ನಡ',t:'kn'},
+ {id:225,n:'Gujarati',q:'ગુજરાતી',t:'gu'},
+ {id:226,n:'Marathi',q:'मराठी',t:'mr'},
+ {id:29,n:'Persian',q:'فارسی',rtl:1,t:'fa'},
+ {id:33,n:'Indonesian',q:'Indonesia',t:'id'},
+ {id:77,n:'Turkish',q:'Türkçe',t:'tr'},
+ {id:31,n:'French',q:'Français',t:'fr'},
+ {id:83,n:'Spanish',q:'Español',t:'es'}
 ];
 var QARIS=[
  {id:'alafasy',n:'Mishary Alafasy',base:'https://verses.quran.com/Alafasy/mp3/'},
