@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Al-Quran — Look Options (pick 1 / 2 / 3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;600&family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pagebg:#101114; --pagetext:#e9e9ee; --pagemuted:#8b8b93;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0;background:
+      radial-gradient(1200px 600px at 50% -10%, #1c1e24 0%, #101114 60%);
+    color:var(--pagetext);
+    font-family:Inter,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:28px 16px 64px;
+  }
+  .wrap{max-width:1120px;margin:0 auto}
+  header.top{text-align:center;margin-bottom:26px}
+  header.top h1{font-size:26px;margin:0 0 6px;font-weight:700;letter-spacing:-.02em}
+  header.top p{margin:0;color:var(--pagemuted);font-size:14px;line-height:1.5}
+  .hint{margin-top:10px;display:inline-block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#c9a24b;border:1px solid #3a3320;background:#221d10;padding:6px 12px;border-radius:999px}
+
+  .grid{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;align-items:flex-start;margin-top:30px}
+  .opt{width:340px}
+  .opt .cap{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .opt .num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;background:#242730;border:1px solid #3a3d47}
+  .opt .name{font-size:17px;font-weight:700}
+  .opt .mood{color:var(--pagemuted);font-size:12.5px;line-height:1.45;margin:0 0 14px;min-height:36px}
+
+  /* phone */
+  .phone{
+    width:340px;height:706px;border-radius:42px;background:#000;
+    padding:9px;box-shadow:0 30px 60px -20px #000, 0 0 0 1px #2a2c33;
+    position:relative;
+  }
+  .phone::after{content:"";position:absolute;top:16px;left:50%;transform:translateX(-50%);width:96px;height:20px;background:#000;border-radius:12px;z-index:9}
+  .screen{width:100%;height:100%;border-radius:34px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+
+  /* common UI bits */
+  .sbar{height:30px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:11.5px;font-weight:600;flex:0 0 auto;position:relative;z-index:5}
+  .sbar .r{display:flex;gap:5px;align-items:center}
+  .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.85}
+  .appbar{height:52px;display:flex;align-items:center;gap:12px;padding:0 16px;flex:0 0 auto;position:relative;z-index:5}
+  .appbar .ic{width:22px;height:22px;border-radius:6px;border:1.6px solid currentColor;opacity:.72;flex:0 0 auto}
+  .appbar .ttl{flex:1;min-width:0}
+  .appbar .ttl b{display:block;font-size:15px;font-weight:700;line-height:1.15}
+  .appbar .ttl span{font-size:11px;opacity:.6}
+  .metabar{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;text-align:center;padding:0 0 8px;opacity:.65;position:relative;z-index:5}
+
+  .scroll{flex:1;overflow:hidden;padding:0 18px;position:relative;z-index:5}
+
+  .bism{text-align:center;font-family:Amiri,serif;font-size:20px;padding:10px 0 14px;position:relative}
+  .bism::before,.bism::after{content:"";position:absolute;top:50%;width:26%;height:1px;background:currentColor;opacity:.22}
+  .bism::before{left:0}.bism::after{right:0}
+
+  .ayah{padding:14px 0}
+  .ayah + .ayah{border-top:1px solid currentColor;border-top-color:color-mix(in srgb,currentColor 14%,transparent)}
+  .ar{direction:rtl;font-family:Amiri,serif;font-size:25px;line-height:2.05;text-align:right}
+  .ar .num{
+    display:inline-grid;place-items:center;width:30px;height:30px;margin:0 6px;
+    font-size:14px;vertical-align:middle;border-radius:50%;
+  }
+  .tr{direction:rtl;font-family:"Noto Nastaliq Urdu",serif;font-size:15px;line-height:2.15;margin-top:10px;text-align:right}
+  .tr.ltr{direction:ltr;text-align:left;font-family:Inter,sans-serif;font-size:13.5px;line-height:1.6}
+
+  .mini{flex:0 0 auto;margin:0 12px 8px;padding:10px 12px;display:flex;align-items:center;gap:12px;position:relative;z-index:5}
+  .mini .play{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto}
+  .mini .play svg{width:15px;height:15px}
+  .mini .info{flex:1;min-width:0}
+  .mini .info b{display:block;font-size:12px;font-weight:600}
+  .mini .info .bar{height:3px;border-radius:3px;margin-top:7px;overflow:hidden}
+  .mini .info .bar i{display:block;height:100%;width:42%}
+
+  .bnav{flex:0 0 auto;height:58px;display:flex;align-items:center;justify-content:space-around;padding:0 6px;position:relative;z-index:5}
+  .bnav .tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9px;font-weight:600;opacity:.55}
+  .bnav .tab.on{opacity:1}
+  .bnav .tab .g{width:20px;height:20px;border-radius:6px;border:1.7px solid currentColor}
+  .bnav .tab.on .g{background:currentColor}
+
+  /* ---------- ① MUSHAF CLASSIC ---------- */
+  .t1{background:#F6EFE0;color:#2A2118}
+  .t1 .screen{background:
+     linear-gradient(180deg,#FBF7EC 0%,#F6EFE0 100%)}
+  .t1 .sbar,.t1 .appbar{color:#2A2118}
+  .t1 .appbar .ttl span{color:#7A6B54}
+  .t1 .metabar{color:#9A8A6E}
+  .t1 .bism{color:#0B6B4F}
+  .t1 .ar{color:#241C12}
+  .t1 .ar .num{color:#0B6B4F;border:1.5px solid #B08D57;background:#FBF7EC;font-size:12px}
+  .t1 .tr{color:#5B4E3A}
+  .t1 .tr.ltr{color:#5B4E3A}
+  .t1 .mini{background:#FBF7EC;border:1px solid #E6D9BF;border-radius:14px}
+  .t1 .mini .play{background:#0B6B4F;color:#FBF7EC}
+  .t1 .mini .info .bar{background:#E6D9BF}.t1 .mini .info .bar i{background:#0B6B4F}
+  .t1 .bnav{border-top:1px solid #E6D9BF;background:#FBF7EC}
+  .t1 .bnav .tab{color:#0B6B4F}
+  .t1 .ornum{color:#B08D57}
+
+  /* ---------- ② MIDNIGHT GLASS ---------- */
+  .t2{background:#070B14;color:#EAF1FA}
+  .t2 .screen{background:#0A1120}
+  .t2 .bg{position:absolute;inset:0;background:url("bg-calligraphy.jpg") center/cover no-repeat;opacity:.20;filter:saturate(.6) contrast(1.05)}
+  .t2 .glow{position:absolute;inset:0;background:
+     radial-gradient(600px 380px at 80% 0%, rgba(79,142,247,.30), transparent 60%),
+     radial-gradient(500px 400px at 0% 100%, rgba(140,203,247,.18), transparent 60%),
+     linear-gradient(180deg,rgba(7,11,20,.35),rgba(7,11,20,.78))}
+  .t2 .sbar,.t2 .appbar{color:#EAF1FA}
+  .t2 .appbar .ttl span{color:#93A6BD}
+  .t2 .metabar{color:#8FA6C4}
+  .t2 .bism{color:#8CCBF7;text-shadow:0 0 18px rgba(140,203,247,.35)}
+  .t2 .ar{color:#F2F7FF}
+  .t2 .ar .num{color:#CFE4FF;border:1.5px solid rgba(160,200,255,.45);background:rgba(255,255,255,.06);font-size:12px}
+  .t2 .tr{color:#B9C7DA}
+  .t2 .tr.ltr{color:#B9C7DA}
+  .t2 .mini{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:16px;backdrop-filter:blur(8px)}
+  .t2 .mini .play{background:#4F8EF7;color:#fff;box-shadow:0 6px 18px -4px rgba(79,142,247,.7)}
+  .t2 .mini .info .bar{background:rgba(255,255,255,.16)}.t2 .mini .info .bar i{background:linear-gradient(90deg,#4F8EF7,#8CCBF7)}
+  .t2 .bnav{background:rgba(10,16,30,.72);border-top:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px)}
+  .t2 .bnav .tab{color:#8CCBF7}
+  .t2 .ayah + .ayah{border-top-color:rgba(140,203,247,.14)}
+
+  /* ---------- ③ EDITORIAL SIGNAL ---------- */
+  .t3{background:#F4F4F2;color:#16161A}
+  .t3 .screen{background:
+     repeating-linear-gradient(0deg,transparent 0 27px,#E6E6E2 27px 28px),
+     #F4F4F2}
+  .t3 .sbar,.t3 .appbar{color:#16161A}
+  .t3 .appbar .ttl b{font-family:Fraunces,serif;font-weight:600;font-size:16px}
+  .t3 .appbar .ttl span{color:#8A8A8F}
+  .t3 .metabar{color:#B4552D;letter-spacing:.16em}
+  .t3 .bism{font-family:Fraunces,serif;color:#16161A;font-weight:400}
+  .t3 .bism::before,.t3 .bism::after{opacity:.35}
+  .t3 .ar{color:#111;font-size:26px}
+  .t3 .ar .num{color:#B4552D;border:1.5px solid #B4552D;background:#F4F4F2;font-size:12px}
+  .t3 .tr{font-family:"Noto Nastaliq Urdu",serif;color:#4A4A50}
+  .t3 .tr.ltr{font-family:Fraunces,serif;color:#33333A;font-size:14.5px}
+  .t3 .mini{background:#fff;border:1px solid #E2E2DE;border-radius:12px}
+  .t3 .mini .play{background:#B4552D;color:#fff}
+  .t3 .mini .info .bar{background:#E2E2DE}.t3 .mini .info .bar i{background:#B4552D}
+  .t3 .bnav{border-top:1px solid #E2E2DE;background:#fff}
+  .t3 .bnav .tab{color:#B4552D}
+
+  .foot{margin-top:34px;text-align:center;color:var(--pagemuted);font-size:13px;line-height:1.7}
+  .foot b{color:#d9d9e0}
+  @media (max-width:1120px){ .phone{width:100%;max-width:340px} .opt{width:100%;max-width:340px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Al-Quran — Reading Screen: 3 Look Options</h1>
+    <p>Teenon me Arabic (Uthmani) + neeche uska tarjuma, ayah number medallion, mini audio player aur bottom nav hai.<br>Sirf LOOK alag hai. Jo pasand aaye — uska number bolo (ya mix: "2, par rang 3 ka").</p>
+    <div class="hint">Chrome me scroll karke teenon dekho</div>
+  </header>
+
+  <div class="grid">
+
+    <!-- ============ ① MUSHAF CLASSIC ============ -->
+    <div class="opt">
+      <div class="cap"><div class="num">①</div><div class="name">Mushaf Classic</div></div>
+      <p class="mood">Asli kitab jaisa — cream paper, deep emerald, patli gold lines. Spec ka "traditional Mushaf" feel.</p>
+      <div class="phone"><div class="screen t1">
+        <div class="sbar"><span>9:41</span><span class="r"><i class="dot"></i><i class="dot"></i><i class="dot"></i></span></div>
+        <div class="appbar">
+          <div class="ic" style="border:0;background:currentColor;opacity:.75;-webkit-mask:none"></div>
+          <div class="ttl" style="text-align:center"><b>سُورَةُ ٱلْفَاتِحَةِ</b><span>Al-Fatihah · The Opening · 7 ayahs</span></div>
+          <div class="ic"></div>
+        </div>
+        <div class="metabar">Juz 1 &nbsp;·&nbsp; Page 1</div>
+        <div class="scroll">
+          <div class="bism">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
+          <div class="ayah">
+            <div class="ar">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ <span class="num">١</span></div>
+            <div class="tr">شروع کرتا ہوں اللہ تعالیٰ کے نام سے جو بڑا مہربان نہایت رحم والا ہے۔</div>
+          </div>
+          <div class="ayah">
+            <div class="ar">ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ <span class="num">٢</span></div>
+            <div class="tr">سب تعریف اللہ تعالیٰ کے لئے ہے جو تمام جہانوں کا پالنے والا ہے۔</div>
+          </div>
+          <div class="ayah">
+            <div class="ar">ٱلرَّحْمَٰنِ ٱلرَّحِيمِ <span class="num">٣</span></div>
+            <div class="tr">بڑا مہربان، نہایت رحم کرنے والا۔</div>
+          </div>
+        </div>
+        <div class="mini">
+          <div class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+          <div class="info"><b>Alafasy · Arabic + Urdu</b><div class="bar"><i></i></div></div>
+        </div>
+        <div class="bnav">
+          <div class="tab"><i class="g"></i>Home</div>
+          <div class="tab on"><i class="g" style="background:currentColor"></i>Quran</div>
+          <div class="tab"><i class="g"></i>Bookmarks</div>
+          <div class="tab"><i class="g"></i>Audio</div>
+          <div class="tab"><i class="g"></i>Settings</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ============ ② MIDNIGHT GLASS ============ -->
+    <div class="opt">
+      <div class="cap"><div class="num">②</div><div class="name">Midnight Glass</div></div>
+      <p class="mood">Tumhara favourite arctic blue glass — dark navy, halka glow, frosted cards, calligraphy wallpaper peeche.</p>
+      <div class="phone"><div class="screen t2">
+        <div class="bg"></div><div class="glow"></div>
+        <div class="sbar"><span>9:41</span><span class="r"><i class="dot"></i><i class="dot"></i><i class="dot"></i></span></div>
+        <div class="appbar">
+          <div class="ic" style="border:0;background:currentColor;opacity:.75"></div>
+          <div class="ttl" style="text-align:center"><b>سُورَةُ ٱلْفَاتِحَةِ</b><span>Al-Fatihah · 7 ayahs</span></div>
+          <div class="ic"></div>
+        </div>
+        <div class="metabar">Juz 1 · Page 1</div>
+        <div class="scroll">
+          <div class="bism">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
+          <div class="ayah">
+            <div class="ar">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ <span class="num">١</span></div>
+            <div class="tr">شروع کرتا ہوں اللہ تعالیٰ کے نام سے جو بڑا مہربان نہایت رحم والا ہے۔</div>
+          </div>
+          <div class="ayah">
+            <div class="ar">ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ <span class="num">٢</span></div>
+            <div class="tr">سب تعریف اللہ تعالیٰ کے لئے ہے جو تمام جہانوں کا پالنے والا ہے۔</div>
+          </div>
+          <div class="ayah">
+            <div class="ar">ٱلرَّحْمَٰنِ ٱلرَّحِيمِ <span class="num">٣</span></div>
+            <div class="tr">بڑا مہربان، نہایت رحم کرنے والا۔</div>
+          </div>
+        </div>
+        <div class="mini">
+          <div class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+          <div class="info"><b>Alafasy · Arabic + Urdu</b><div class="bar"><i></i></div></div>
+        </div>
+        <div class="bnav">
+          <div class="tab"><i class="g"></i>Home</div>
+          <div class="tab on"><i class="g" style="background:currentColor"></i>Quran</div>
+          <div class="tab"><i class="g"></i>Bookmarks</div>
+          <div class="tab"><i class="g"></i>Audio</div>
+          <div class="tab"><i class="g"></i>Settings</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ============ ③ EDITORIAL SIGNAL ============ -->
+    <div class="opt">
+      <div class="cap"><div class="num">③</div><div class="name">Editorial Signal</div></div>
+      <p class="mood">Tumhara naya "SIGNAL" taste — saaf grayscale paper + warm terracotta accent, magazine jaisi typography. No neon.</p>
+      <div class="phone"><div class="screen t3">
+        <div class="sbar"><span>9:41</span><span class="r"><i class="dot"></i><i class="dot"></i><i class="dot"></i></span></div>
+        <div class="appbar">
+          <div class="ic" style="border:0;background:currentColor;opacity:.75"></div>
+          <div class="ttl" style="text-align:center"><b>Al-Fatihah</b><span>سُورَةُ ٱلْفَاتِحَةِ · 7 ayahs</span></div>
+          <div class="ic"></div>
+        </div>
+        <div class="metabar">Juz 1 / Page 1</div>
+        <div class="scroll">
+          <div class="bism">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
+          <div class="ayah">
+            <div class="ar">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ <span class="num">١</span></div>
+            <div class="tr ltr">In the name of God, the Lord of Mercy, the Giver of Mercy!</div>
+          </div>
+          <div class="ayah">
+            <div class="ar">ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ <span class="num">٢</span></div>
+            <div class="tr ltr">Praise belongs to God, Lord of the Worlds,</div>
+          </div>
+          <div class="ayah">
+            <div class="ar">ٱلرَّحْمَٰنِ ٱلرَّحِيمِ <span class="num">٣</span></div>
+            <div class="tr ltr">the Lord of Mercy, the Giver of Mercy,</div>
+          </div>
+        </div>
+        <div class="mini">
+          <div class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+          <div class="info"><b>Alafasy · Arabic + English</b><div class="bar"><i></i></div></div>
+        </div>
+        <div class="bnav">
+          <div class="tab"><i class="g"></i>Home</div>
+          <div class="tab on"><i class="g" style="background:currentColor"></i>Quran</div>
+          <div class="tab"><i class="g"></i>Bookmarks</div>
+          <div class="tab"><i class="g"></i>Audio</div>
+          <div class="tab"><i class="g"></i>Settings</div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <p class="foot">
+    Tarjuma text asli verified source se hai (quran.com API — Urdu: Junagarhi, English: Abdel Haleem).<br>
+    <b>Bolo: 1, 2, ya 3</b> — phir main poora app isi look me build karta hoon.
+  </p>
+</div>
+</body>
+</html>
