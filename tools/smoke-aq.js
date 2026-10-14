@@ -67,19 +67,29 @@ ok('urdu: player shows Surah x/114', els['apos'] && els['apos']._text.indexOf('S
 ok('urdu: state says Urdu tarjuma', els['astate'] && els['astate']._text.indexOf('Urdu tarjuma')>=0);
 ok('urdu: AU.kind=ur', AU.kind==='ur');
 
-/* non-urdu + with-tarjuma -> per-ayah arabic */
+/* with-tarjuma (default audioSrc=site) -> asli recorded website audio, har language pe */
 stopAudio();
-S.lang=85; S.audioMode='both'; saveS();
+S.lang=85; S.audioMode='both'; S.audioSrc='site'; saveS();
 openSurah(2,1);
-ok('en-both: per-ayah Play visible', els['s-reader']._html.indexOf('playAyah(2,1)')>=0);
+ok('both-site: per-ayah Play hidden', els['s-reader']._html.indexOf('playAyah(2,1)')<0);
+ok('both-site: shows real-audio source chip', els['s-reader']._html.indexOf('Sudais')>=0);
 PLAYED.length=0;
 startAyah(2,1); await flush();
-ok('en-both: plays per-ayah arabic', PLAYED.length===1 && PLAYED[0]==='https://verses.quran.com/Alafasy/mp3/002001.mp3');
-ok('en-both: AU.kind=ayah', AU.kind==='ayah');
+ok('both-site: plays per-surah real audio', PLAYED.length===1 && PLAYED[0]==='https://www.nooresunnat.com/Audio/Complete%20Quran/Shuraim-Sudais-Urdu/002s-Baqarah.mp3');
+ok('both-site: AU.kind=ur', AU.kind==='ur');
+
+/* tts mode -> per-ayah arabic + device voice */
+stopAudio();
+S.audioSrc='tts'; saveS();
+openSurah(2,1);
+ok('tts: per-ayah Play visible', els['s-reader']._html.indexOf('playAyah(2,1)')>=0);
+PLAYED.length=0; startAyah(2,1); await flush();
+ok('tts: plays per-ayah arabic', PLAYED.length===1 && PLAYED[0]==='https://verses.quran.com/Alafasy/mp3/002001.mp3');
+ok('tts: AU.kind=ayah', AU.kind==='ayah');
 
 /* arabic-only mode */
 stopAudio();
-S.audioMode='ar'; saveS();
+S.audioSrc='site'; S.audioMode='ar'; saveS();
 PLAYED.length=0; startAyah(1,1);
 ok('ar-mode: plays per-ayah arabic', PLAYED.length===1 && PLAYED[0].indexOf('/001001.mp3')>=0);
 ok('ar-mode: no urdu chip', els['s-reader']._html.indexOf('Sudais')<0 || S.lang!==54);

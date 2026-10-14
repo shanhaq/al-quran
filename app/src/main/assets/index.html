@@ -243,6 +243,7 @@ S.trSize = S.trSize || 15;
 S.showTr = (S.showTr === undefined) ? true : S.showTr;
 S.reciter = S.reciter || 'alafasy';
 S.audioMode = S.audioMode || 'ar'; // 'ar' = without tarjuma, 'both' = with tarjuma
+S.audioSrc = S.audioSrc || 'site'; // 'site' = nooresunnat asli recorded (Sudais/Shuraim + Urdu tarjuma), 'tts' = device voice
 S.ttsVoice = S.ttsVoice || ''; // '' = auto (male voice prefer karo)
 S.ttsVoiceName = S.ttsVoiceName || ''; // display name of chosen voice
 function saveS(){ LS.set('aq_settings', S); applyTheme(); }
@@ -494,7 +495,7 @@ function audioUrl(s,a){
    one file per surah (nooresunnat.com). Used when tarjuma language = Urdu. */
 var UR_BASE = 'https://www.nooresunnat.com/Audio/Complete%20Quran/Shuraim-Sudais-Urdu/';
 function urUrl(s){ return (typeof UR_AUDIO!=='undefined' && UR_AUDIO[s]) ? UR_BASE + UR_AUDIO[s] : null; }
-function urduBoth(){ return S.audioMode==='both' && S.lang===54; }
+function urduBoth(){ return S.audioMode==='both' && S.audioSrc==='site'; } // asli recorded (website) tarjuma audio — default
 function ttsTag(){ var l=langObj(S.lang); return l.t || 'en'; }
 function speakTr(text, done){
   text = String(text||'').trim();
@@ -626,9 +627,16 @@ function updatePlayer(){
   if(mA) mA.classList.toggle('on', S.audioMode!=='both');
   if(mB) mB.classList.toggle('on', S.audioMode==='both');
 }
+function toggleAudioSrc(){ setAudioSrc(S.audioSrc==='site'?'tts':'site'); }
+function setAudioSrc(v){
+  S.audioSrc = v; saveS();
+  toast(v==='site' ? 'Tarjuma audio: asli recorded voice (Sudais & Shuraim + Urdu)' : 'Tarjuma audio: device voice (TTS)');
+  if(state.screen==='reader'){
+    if(AU.active){ AU.s=state.surah; AU.a=state.ayah; auLoad(state.surah,state.ayah,true); } else paintReader();
+  } else paintSettings();
+}
 function setAudioMode(m){
-  S.audioMode = m; saveS();
-  toast(m==='both' ? (S.lang===54 ? 'Audio: with tarjuma (asli Urdu voice)' : 'Audio: with tarjuma') : 'Audio: without tarjuma (sirf Arabic)');
+  S.audioMode = m; saveS();  toast(m==='both' ? (S.audioSrc==='site' ? 'Audio: with tarjuma (asli recorded voice)' : 'Audio: with tarjuma (device voice)') : 'Audio: without tarjuma (sirf Arabic)');
   if(state.screen==='reader'){
     paintReader();
     if(AU.active){ AU.s=state.surah; AU.a=state.ayah; auLoad(state.surah,state.ayah,true); }
@@ -678,7 +686,7 @@ function paintSettings(){
   h += '<div class="card">';
   h += setRow('Qari (reciter)', esc((QARIS.filter(function(x){return x.id===S.reciter;})[0]||QARIS[0]).n), '<button class="chip" onclick="pickReciter()">Badlo</button>');
   h += setRow('Audio mode', S.audioMode==='both'?'With tarjuma':'Without tarjuma', '<button class="chip" onclick="setAudioMode(S.audioMode===\'both\'?\'ar\':\'both\');paintSettings()">Badlo</button>');
-  h += setRow('Tarjuma audio', (S.lang===54?'Asli recorded voice (Sudais & Shuraim + Urdu)':'Device voice (TTS)'), '<span class="tiny muted">'+(S.lang===54?'real':'TTS')+'</span>');
+  h += setRow('Tarjuma audio', (S.audioSrc==='site'?'Asli recorded (Sudais & Shuraim + Urdu)':'Device voice (TTS)'), '<button class="chip" onclick="toggleAudioSrc();paintSettings()">Badlo</button>');
   h += setRow('Tarjuma voice (TTS)', esc(S.ttsVoice ? (S.ttsVoiceName||S.ttsVoice) : 'Auto · male prefer'), '<button class="chip" onclick="pickVoice()">Badlo</button>');
   h += setRow('Quran alarm', 'Reminder system', '<span class="tiny muted">Next stage</span>');
   h += setRow('Offline download', 'Surah audio + tarjuma', '<span class="tiny muted">Next stage</span>');
