@@ -405,7 +405,7 @@ function renderAyahs(s){
       out += '<div class="tr'+(lang.rtl?' rtl':'')+'" style="font-size:'+S.trSize+'px">'+esc(t)+'<span class="src">Tarjuma: '+esc(lang.n)+' (quran.com)</span></div>';
     }
     out += '<div class="aytl">'
-      + '<button class="mini2" onclick="playAyah('+s+','+a+')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Play</button>'
+      + (urduBoth() ? '' : '<button class="mini2" onclick="playAyah('+s+','+a+')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Play</button>')
       + '<button class="mini2'+(isBm(a)?' on':'')+'" onclick="toggleBm('+s+','+a+',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>'+(isBm(a)?'Saved':'Bookmark')+'</button>'
       + '<button class="mini2" onclick="shareAyah('+s+','+a+')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Share</button>'
       + '</div>';
@@ -436,7 +436,12 @@ function paintReader(){
     + '<button class="chip" id="mA" onclick="setAudioMode(\'ar\')">Without tarjuma</button>'
     + '<button class="chip" id="mB" onclick="setAudioMode(\'both\')">With tarjuma</button>'
     + '</div>';
-  h += '<div class="aseg"><button class="chip" onclick="pickReciter()">Qari: '+esc(qname)+' ▾</button></div>';
+  if(urduBoth()){
+    h += '<div class="aseg"><button class="chip on">Sudais &amp; Shuraim + Urdu tarjuma</button></div>';
+    h += '<div class="tiny muted" style="margin-top:8px">Urdu tarjuma asli recorded voice me suna ja raha hai (Arabic recitation + Urdu translation, ek ke baad ek).</div>';
+  } else {
+    h += '<div class="aseg"><button class="chip" onclick="pickReciter()">Qari: '+esc(qname)+' ▾</button></div>';
+  }
   h += '</div>';
 
   h += '<div class="card" style="padding:6px 14px 14px">';
@@ -483,6 +488,11 @@ function audioUrl(s,a){
   var q = QARIS.filter(function(x){ return x.id===S.reciter; })[0] || QARIS[0];
   return q.base + pad3(s) + pad3(a) + '.mp3';
 }
+/* Real recorded Urdu tarjuma audio: Sudais/Shuraim Arabic + Qari Fateh Muhammad Urdu,
+   one file per surah (nooresunnat.com). Used when tarjuma language = Urdu. */
+var UR_BASE = 'https://www.nooresunnat.com/Audio/Complete%20Quran/Shuraim-Sudais-Urdu/';
+function urUrl(s){ return (typeof UR_AUDIO!=='undefined' && UR_AUDIO[s]) ? UR_BASE + UR_AUDIO[s] : null; }
+function urduBoth(){ return S.audioMode==='both' && S.lang===54; }
 function ttsTag(){ var l=langObj(S.lang); return l.t || 'en'; }
 function speakTr(text, done){
   text = String(text||'').trim();
@@ -509,7 +519,7 @@ function stopSpeak(){
 }
 function readerToggle(){
   if(AU.playing || AU.speaking){ pauseAudio(); return; }
-  if(AU.audio && AU.s===state.surah && AU.a===state.ayah){
+  if(AU.audio && AU.s===state.surah && (urduBoth() ? AU.kind==='ur' : AU.a===state.ayah)){
     AU.active = true;
     AU.audio.play().then(function(){ AU.playing=true; updatePlayer(); }).catch(function(){ AU.playing=false; updatePlayer(); startAyah(state.surah, state.ayah); });
     updatePlayer(); return;
@@ -524,9 +534,13 @@ function startAyah(s,a){
 function auLoad(s,a,play){
   stopSpeak();
   if(AU.audio){ try{ AU.audio.pause(); }catch(e){} AU.audio.onended=null; AU.audio.onerror=null; AU.audio.ontimeupdate=null; }
-  AU.audio = new Audio(audioUrl(s,a));
+  var ur = urduBoth();
+  var u = ur ? urUrl(s) : audioUrl(s,a);
+  if(!u){ AU.playing=false; AU.active=false; updatePlayer(); toast('Is surah ka Urdu tarjuma audio available nahi'); return; }
+  AU.kind = ur ? 'ur' : 'ayah';
+  AU.audio = new Audio(u);
   AU.audio.addEventListener('error', function(){ AU.playing=false; AU.active=false; updatePlayer(); toast('Audio load nahi hua — internet check karo'); });
-  AU.audio.addEventListener('ended', onEnded);
+  AU.audio.addEventListener('ended', ur ? onEndedUr : onEnded);
   if(play!==false){ AU.audio.play().then(function(){ AU.playing=true; updatePlayer(); }).catch(function(){ AU.playing=false; updatePlayer(); toast('Play nahi hua — dobara tap karo'); }); }
 }
 function onEnded(){
@@ -540,6 +554,13 @@ function onEnded(){
     audioNext();
   }
 }
+function onEndedUr(){
+  AU.playing=false;
+  if(!AU.active){ updatePlayer(); return; }
+  var ns = AU.s + 1;
+  if(ns>114){ AU.active=false; stopSpeak(); updatePlayer(); toast('Quran mukammal · Alhamdulillah'); return; }
+  AU.s=ns; AU.a=1; markRead(ns,1); gotoAyah(ns,1); auLoad(ns,1,true); updatePlayer();
+}
 function nextPos(s,a){
   a++;
   if(a>SU[s].c){ if(s<114){ s++; a=1; } else { return null; } }
@@ -551,6 +572,13 @@ function audioNext(){
   AU.s=n[0]; AU.a=n[1]; markRead(AU.s,AU.a); gotoAyah(AU.s,AU.a); auLoad(AU.s,AU.a,true); updatePlayer();
 }
 function audioStep(d){
+  if(urduBoth()){
+    var ns = AU.s + d;
+    if(ns<1){ ns=1; toast('Pehli surah'); }
+    if(ns>114){ ns=114; toast('Aakhri surah'); }
+    AU.active=true; AU.s=ns; AU.a=1; markRead(ns,1); gotoAyah(ns,1); auLoad(ns,1,true); updatePlayer();
+    return;
+  }
   var s=AU.s, a=AU.a+d;
   if(a<1){ if(s>1){ s--; a=SU[s].c; } else { a=1; } }
   if(a>SU[s].c){ if(s<114){ s++; a=1; } else { a=SU[s].c; toast('Aakhri ayah'); } }
@@ -582,18 +610,26 @@ function updatePlayer(){
   var active = AU.playing || AU.speaking || AU.active;
   var b=$('rplay'); if(b) b.innerHTML = (AU.playing||AU.speaking) ? ICON_PAUSE : ICON_PLAY;
   var fb=$('fab'); if(fb){ fb.classList.toggle('show', active && state.screen==='reader'); fb.innerHTML = (AU.playing||AU.speaking) ? ICON_PAUSE : ICON_PLAY; }
-  var pos=$('apos'); if(pos) pos.textContent = SU[AU.s] ? (SU[AU.s].n + ' · Ayah ' + AU.a + ' / ' + SU[AU.s].c) : '—';
+  var ur = urduBoth();
+  var pos=$('apos'); if(pos) pos.textContent = ur
+    ? (SU[AU.s] ? ('Surah ' + AU.s + ' / 114 · ' + SU[AU.s].n) : '—')
+    : (SU[AU.s] ? (SU[AU.s].n + ' · Ayah ' + AU.a + ' / ' + SU[AU.s].c) : '—');
   var st=$('astate');
-  if(st) st.textContent = AU.speaking ? 'Tarjuma padha ja raha hai…'
-    : (AU.playing ? (S.audioMode==='both' ? 'Arabic + tarjuma' : 'Arabic recitation') : (active ? 'Rukao' : 'Tap play to listen'));
+  if(st) st.textContent = ur
+    ? (AU.playing ? 'Arabic + Urdu tarjuma · Sudais & Shuraim' : (active ? 'Rukao' : 'Play dabao — poori surah (Arabic + Urdu tarjuma)'))
+    : (AU.speaking ? 'Tarjuma padha ja raha hai…'
+      : (AU.playing ? (S.audioMode==='both' ? 'Arabic + tarjuma' : 'Arabic recitation') : (active ? 'Rukao' : 'Tap play to listen')));
   var mA=$('mA'), mB=$('mB');
   if(mA) mA.classList.toggle('on', S.audioMode!=='both');
   if(mB) mB.classList.toggle('on', S.audioMode==='both');
 }
 function setAudioMode(m){
-  S.audioMode = m; saveS(); updatePlayer();
-  toast(m==='both' ? 'Audio: with tarjuma' : 'Audio: without tarjuma (sirf Arabic)');
-  if(m==='both' && S.lang!==85 && state.surah){ fetchTr(state.surah).then(function(){ updatePlayer(); }).catch(function(){}); }
+  S.audioMode = m; saveS();
+  toast(m==='both' ? (S.lang===54 ? 'Audio: with tarjuma (asli Urdu voice)' : 'Audio: with tarjuma') : 'Audio: without tarjuma (sirf Arabic)');
+  if(state.screen==='reader'){
+    paintReader();
+    if(AU.active){ AU.s=state.surah; AU.a=state.ayah; auLoad(state.surah,state.ayah,true); }
+  } else paintSettings();
 }
 
 /* ============ BOOKMARKS ============ */
@@ -639,12 +675,13 @@ function paintSettings(){
   h += '<div class="card">';
   h += setRow('Qari (reciter)', esc((QARIS.filter(function(x){return x.id===S.reciter;})[0]||QARIS[0]).n), '<button class="chip" onclick="pickReciter()">Badlo</button>');
   h += setRow('Audio mode', S.audioMode==='both'?'With tarjuma':'Without tarjuma', '<button class="chip" onclick="setAudioMode(S.audioMode===\'both\'?\'ar\':\'both\');paintSettings()">Badlo</button>');
+  h += setRow('Tarjuma audio', (S.lang===54?'Asli recorded voice (Sudais & Shuraim + Urdu)':'Device voice (TTS)'), '<span class="tiny muted">'+(S.lang===54?'real':'TTS')+'</span>');
   h += setRow('Quran alarm', 'Reminder system', '<span class="tiny muted">Next stage</span>');
   h += setRow('Offline download', 'Surah audio + tarjuma', '<span class="tiny muted">Next stage</span>');
   h += '</div>';
 
   h += '<div class="card">';
-  h += '<div class="tiny muted" style="text-align:center">Al-Quran · Stage 2<br>Quran text: Uthmani (quran.com) · Tarjuma: quran.com API<br>Audio: per-ayah (verses.quran.com / everyayah.com)</div>';
+  h += '<div class="tiny muted" style="text-align:center">Al-Quran · Stage 2<br>Quran text: Uthmani (quran.com) · Tarjuma: quran.com API<br>Arabic audio: per-ayah · Urdu tarjuma audio: asli recorded (nooresunnat.com)<br>Baaki languages ka tarjuma audio: device voice (TTS)</div>';
   h += '</div>';
   $('s-settings').innerHTML = h;
 }
