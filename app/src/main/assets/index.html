@@ -243,6 +243,8 @@ S.trSize = S.trSize || 15;
 S.showTr = (S.showTr === undefined) ? true : S.showTr;
 S.reciter = S.reciter || 'alafasy';
 S.audioMode = S.audioMode || 'ar'; // 'ar' = without tarjuma, 'both' = with tarjuma
+S.ttsVoice = S.ttsVoice || ''; // '' = auto (male voice prefer karo)
+S.ttsVoiceName = S.ttsVoiceName || ''; // display name of chosen voice
 function saveS(){ LS.set('aq_settings', S); applyTheme(); }
 
 var state = { screen:'quran', surah:0, ayah:0, readerLoaded:0, trCache:{} };
@@ -499,6 +501,7 @@ function speakTr(text, done){
   if(!text){ if(done)done(); return; }
   if(window.Android && Android.canSpeak && Android.canSpeak(ttsTag())){
     window.__ttsDone = function(){ window.__ttsDone=null; if(done)done(); };
+    try{ if(Android.setVoice) Android.setVoice(S.ttsVoice||''); }catch(e){}
     try{ Android.speak(text, ttsTag()); return; }catch(e){}
   }
   if(window.speechSynthesis && window.SpeechSynthesisUtterance){
@@ -676,12 +679,13 @@ function paintSettings(){
   h += setRow('Qari (reciter)', esc((QARIS.filter(function(x){return x.id===S.reciter;})[0]||QARIS[0]).n), '<button class="chip" onclick="pickReciter()">Badlo</button>');
   h += setRow('Audio mode', S.audioMode==='both'?'With tarjuma':'Without tarjuma', '<button class="chip" onclick="setAudioMode(S.audioMode===\'both\'?\'ar\':\'both\');paintSettings()">Badlo</button>');
   h += setRow('Tarjuma audio', (S.lang===54?'Asli recorded voice (Sudais & Shuraim + Urdu)':'Device voice (TTS)'), '<span class="tiny muted">'+(S.lang===54?'real':'TTS')+'</span>');
+  h += setRow('Tarjuma voice (TTS)', esc(S.ttsVoice ? (S.ttsVoiceName||S.ttsVoice) : 'Auto · male prefer'), '<button class="chip" onclick="pickVoice()">Badlo</button>');
   h += setRow('Quran alarm', 'Reminder system', '<span class="tiny muted">Next stage</span>');
   h += setRow('Offline download', 'Surah audio + tarjuma', '<span class="tiny muted">Next stage</span>');
   h += '</div>';
 
   h += '<div class="card">';
-  h += '<div class="tiny muted" style="text-align:center">Al-Quran · Stage 2<br>Quran text: Uthmani (quran.com) · Tarjuma: quran.com API<br>Arabic audio: per-ayah · Urdu tarjuma audio: asli recorded (nooresunnat.com)<br>Baaki languages ka tarjuma audio: device voice (TTS)</div>';
+  h += '<div class="tiny muted" style="text-align:center">Al-Quran · Stage 2b<br>Quran text: Uthmani (quran.com) · Tarjuma: quran.com API<br>Arabic audio: per-ayah · Urdu tarjuma audio: asli male (nooresunnat.com)<br>Baaki languages ka tarjuma audio: device voice (TTS, male prefer)</div>';
   h += '</div>';
   $('s-settings').innerHTML = h;
 }
@@ -723,6 +727,35 @@ function setReciter(id){
     if(AU.audio && AU.active){ auLoad(AU.s,AU.a,true); }
     paintReader();
   } else paintSettings();
+}
+function pickVoice(){
+  var tag = ttsTag();
+  var list = [];
+  try{ if(window.Android && Android.listVoices) list = JSON.parse(Android.listVoices(tag)); }catch(e){}
+  var h = '';
+  h += '<button class="opt'+(!S.ttsVoice?' sel':'')+'" onclick="setVoice(\'\',\'\')">'
+     + '<span class="ck"></span><span class="grow"><b>Auto</b> <span class="muted">male voice prefer</span></span></button>';
+  if(!list.length){
+    var has = (window.Android && Android.canSpeak && Android.canSpeak(tag));
+    h += '<div class="tiny muted" style="padding:12px 4px">'+(has?'Is language ka extra voice device me nahi mila — system default chalega.':'Is language ka voice device me install hi nahi hai.')+'</div>';
+  } else {
+    list = list.slice().sort(function(a,b){
+      var ma=(/male/i.test(a.name)&&!/female/i.test(a.name))?0:1, mb=(/male/i.test(b.name)&&!/female/i.test(b.name))?0:1;
+      return ma-mb;
+    });
+    list.forEach(function(v){
+      var nm = v.name;
+      var isMale = /male/i.test(nm) && !/female/i.test(nm);
+      h += '<button class="opt'+(S.ttsVoice===nm?' sel':'')+'" onclick="setVoice(\''+String(nm).replace(/[\'\\]/g,'')+'\',\''+String(nm).replace(/[\'\\]/g,'')+'\')">'
+        + '<span class="ck"></span><span class="grow"><b>'+esc(String(nm).replace(/[-_]/g,' '))+'</b> <span class="muted">'+(isMale?'male · ':'')+(v.network?'online':'offline')+'</span></span></button>';
+    });
+  }
+  sheet('Tarjuma voice · '+langObj(S.lang).n, h);
+}
+function setVoice(name,disp){
+  S.ttsVoice=name||''; S.ttsVoiceName=disp||''; saveS(); closeSheet();
+  toast(S.ttsVoice?('Voice: '+disp):'Voice: auto (male prefer)');
+  if(state.screen==='settings') paintSettings();
 }
 function pickSurah(){
   var h=''; CHMETA.forEach(function(r){
